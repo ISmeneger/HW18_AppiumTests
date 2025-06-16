@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.12.0'
+}
+
+group = 'Ilya_S'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    lombokVersion = '1.18.38'
+    allureVersion = '2.29.1'
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // https://mvnrepository.com/artifact/io.rest-assured/rest-assured
+    testImplementation 'io.rest-assured:rest-assured:5.5.1'
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+    implementation 'org.seleniumhq.selenium:selenium-java:4.28.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    implementation 'org.assertj:assertj-core:3.27.3'
+    implementation 'org.aeonbits.owner:owner:1.0.12'
+    testImplementation "io.qameta.allure:allure-junit5:${allureVersion}"
+    implementation "io.qameta.allure:allure-rest-assured:${allureVersion}"
+    // https://mvnrepository.com/artifact/org.aspectj/aspectjweaver
+    runtimeOnly("org.aspectj:aspectjweaver:1.9.23")
+    // https://mvnrepository.com/artifact/io.appium/java-client
+    implementation 'io.appium:java-client:9.2.2'
+}
+
+test {
+    useJUnitPlatform()
+}
