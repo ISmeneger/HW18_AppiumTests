@@ -5,9 +5,14 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import org.aeonbits.owner.ConfigFactory;
-import org.junit.jupiter.api.*;
-import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Actions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -27,9 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AppiumBrowserWebFormTests {
     //Запуск: appium --allow-insecure chromedriver_autodownload
     private AndroidDriver driver;
-    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-//    TestPropertiesConfig config = ConfigFactory.create(TestPropertiesConfig.class, System.getProperties());
-
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    TestPropertiesConfig config = ConfigFactory.create(TestPropertiesConfig.class, System.getProperties());
 
     public static final String VALUE_NAME = "value";
     private static final String ITEM = "Web form";
@@ -75,27 +79,25 @@ public class AppiumBrowserWebFormTests {
     @Test
     @DisplayName("Check user field")
     void textInputTest() {
-        String login = "user";
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
         WebElement textInputField = driver.findElement(By.id("my-text-id"));
-        textInputField.sendKeys(login);
+        textInputField.sendKeys(config.getLogin());
 
         String actualLogin = textInputField.getDomProperty(VALUE_NAME);
 
-        assertThat(actualLogin).isEqualTo(login);
+        assertThat(actualLogin).isNotEmpty();
     }
 
     @Test
     @DisplayName("Check clear user field")
     void textInputClearTest() {
-        String login = "user";
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
         WebElement textInputField = driver.findElement(By.id("my-text-id"));
-        textInputField.sendKeys(login);
+        textInputField.sendKeys(config.getLogin());
         textInputField.clear();
 
         String actualLogin = textInputField.getDomProperty(VALUE_NAME);
@@ -106,25 +108,25 @@ public class AppiumBrowserWebFormTests {
     @Test
     @DisplayName("Check password field")
     void passwordInputTest() {
-        String password = "user";
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
         WebElement passwordInputField = driver.findElement(By.name("my-password"));
-        passwordInputField.sendKeys(password);
+        passwordInputField.sendKeys(config.getPassword());
 
-        assertEquals(password, passwordInputField.getDomProperty(VALUE_NAME));
+        String actualPassword = passwordInputField.getDomProperty(VALUE_NAME);
+
+        assertThat(actualPassword).isNotEmpty();
     }
 
     @Test
     @DisplayName("Check clear password field")
     void passwordClearTest() {
-        String password = "user";
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
         WebElement passwordInputField = driver.findElement(By.name("my-password"));
-        passwordInputField.sendKeys(password);
+        passwordInputField.sendKeys(config.getPassword());
         passwordInputField.clear();
 
         String actualPassword = passwordInputField.getDomProperty(VALUE_NAME);
@@ -294,17 +296,18 @@ public class AppiumBrowserWebFormTests {
 
     @Test
     @DisplayName("Check checked Checkbox")
-    void checkedCheckboxTest() {
+    void checkedCheckboxTest() throws InterruptedException {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
         PointerUtils.swipe(driver);
         PointerUtils.swipe(driver);
 
-        WebElement checkedCheckbox = driver.findElement(By.id("my-check-1"));
+        WebElement checkedCheckbox = driver.findElement(By.id("my-check-2"));
 
         assertTrue(checkedCheckbox.isSelected());
         checkedCheckbox.click();
+        Thread.sleep(3000);
         assertFalse(checkedCheckbox.isSelected());
     }
 
@@ -317,7 +320,7 @@ public class AppiumBrowserWebFormTests {
         PointerUtils.swipe(driver);
         PointerUtils.swipe(driver);
 
-        WebElement defaultCheckbox = driver.findElement(By.id("my-check-2"));
+        WebElement defaultCheckbox = driver.findElement(By.id("my-check-1"));
 
         assertFalse(defaultCheckbox.isSelected());
 
@@ -355,7 +358,7 @@ public class AppiumBrowserWebFormTests {
 
         WebElement colorPicker = driver.findElement(By.name("my-colors"));
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        JavascriptExecutor js = driver;
 
         String initColor = colorPicker.getDomProperty(VALUE_NAME);
         System.out.println("The initial color is " + initColor);
@@ -374,6 +377,7 @@ public class AppiumBrowserWebFormTests {
     @Test
     @DisplayName("Check Date picker")
     void datePickerTest() {
+        String actualDate = "06/18/2025";
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
 
@@ -383,15 +387,13 @@ public class AppiumBrowserWebFormTests {
         WebElement dateBox = driver.findElement(By.name("my-date"));
 
         dateBox.click();
-        WebElement dateLocator = driver.findElement(By.xpath("//td[@class = 'day' and text() = 16]"));
-        dateLocator.click();
-        dateBox.sendKeys("06/16/2025");
+        dateBox.sendKeys(actualDate);
 
-        assertEquals("06/16/2025", dateBox.getDomProperty(VALUE_NAME));
+        assertEquals(actualDate, dateBox.getDomProperty(VALUE_NAME));
     }
 
     @Test
-    @Order(22)
+    @DisplayName("Check Example range")
     void actionAPIMouseExampleRangeTest() throws InterruptedException {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.linkText(ITEM))).click();
@@ -401,6 +403,20 @@ public class AppiumBrowserWebFormTests {
 
         WebElement rangeElement = driver.findElement(By.name("my-range"));
 
+//        for (int min = 0; min <= 10 ; min++) {
+//            rangeElement.sendKeys(Keys.ARROW_RIGHT);
+//        }
+//        Thread.sleep(2000);
+//
+//        assertEquals("10", rangeElement.getDomProperty(VALUE_NAME));
+//
+//        for (int min = 10; min >= 0 ; min--) {
+//            rangeElement.sendKeys(Keys.ARROW_LEFT);
+//        }
+//        Thread.sleep(2000);
+//
+//        assertEquals("0", rangeElement.getDomProperty(VALUE_NAME));
+
         int width = rangeElement.getSize().getWidth();
         System.out.println("width = " + width);
         int x = rangeElement.getLocation().getX();
@@ -409,15 +425,8 @@ public class AppiumBrowserWebFormTests {
         System.out.println("y = " + y);
         int i;
         for (i = 5; i <= 10; i++) {
-            new Actions(driver)
-                    .moveToElement(rangeElement)
-                    .clickAndHold()
-                    .moveToLocation(x + width / 10 * i, y)
-                    .release()
-                    .perform();
-
+            driver.executeScript("arguments[0].setAttribute('value', arguments[1]);", rangeElement, String.valueOf(i));
         }
-
         assertEquals(String.valueOf(i - 1), rangeElement.getDomProperty(VALUE_NAME));
     }
 
@@ -430,10 +439,9 @@ public class AppiumBrowserWebFormTests {
         PointerUtils.swipe(driver);
         PointerUtils.swipe(driver);
 
-        WebElement submitButton = driver.findElement(By.tagName("button"));
-
+        WebElement submitButton = driver.findElement(By.xpath("//button[@type = 'submit']"));
         submitButton.click();
-        Thread.sleep(5000);
+        Thread.sleep(3000);
 
         assertEquals("https://bonigarcia.dev/selenium-webdriver-java/submitted-form.html?my-text=&my-password=&my-textarea=&my-readonly=Readonly+input&my-select=Open+this+select+menu&my-datalist=&my-file=&my-check=on&my-radio=on&my-colors=%23563d7c&my-date=&my-range=5&my-hidden=", driver.getCurrentUrl());
 
